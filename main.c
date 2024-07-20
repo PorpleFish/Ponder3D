@@ -19,7 +19,6 @@ tri_t* trisToRender = NULL;
 ///////////////////////////////////////////
 
 vec3_t cameraPosition = { .x = 0, .y = 0, .z = -5 };
-vec3_t cubeRotation = { .x = 0, .y = 0, .z = 0 };
 float fovFactor = 1280;
 
 bool isRunning = false;
@@ -41,6 +40,12 @@ void setup(void) {
 		windowWidth,
 		windowHeight
 	);
+
+	// Loads the cube values in the mesh data structure
+	//loadCubeMeshData();
+	loadObj("Assets/Table_Scene.obj");
+
+	printf("%d", array_length(mesh.verts));
 }
 
 ///////////////////////////////////////////
@@ -69,18 +74,20 @@ void update(void) {
 	trisToRender = NULL;
 
 	// Rotate by 0.1 each frame
-	cubeRotation.x += 0.01;
-	cubeRotation.y += 0.01;
-	cubeRotation.z += 0.01;
+	//mesh.rotation.x += 0.01;
+	mesh.rotation.y += 0.01;
+	//mesh.rotation.z += 0.01;
 
-	// Loop through cube mesh faces
-	for (int i = 0; i < N_MESH_FACES; i++) {
-		face_t meshFace = meshFaces[i]; // Set temporary face
+	// Loop through mesh faces
+	int faceCount = array_length(mesh.faces);
+
+	for (int i = 0; i < faceCount; i++) {
+		face_t meshFace = mesh.faces[i]; // Set temporary face
 		
 		vec3_t faceVertices[3];
-		faceVertices[0] = meshVertices[meshFace.a - 1];
-		faceVertices[1] = meshVertices[meshFace.b - 1];
-		faceVertices[2] = meshVertices[meshFace.c - 1];
+		faceVertices[0] = mesh.verts[meshFace.a - 1];
+		faceVertices[1] = mesh.verts[meshFace.b - 1];
+		faceVertices[2] = mesh.verts[meshFace.c - 1];
 
 		tri_t projectedTri;
 
@@ -89,9 +96,9 @@ void update(void) {
 			vec3_t transformedVertex = faceVertices[j];
 
 			// Apply rotations for this frame
-			transformedVertex = vec3RotateX(transformedVertex, cubeRotation.x);
-			transformedVertex = vec3RotateY(transformedVertex, cubeRotation.y);
-			transformedVertex = vec3RotateZ(transformedVertex, cubeRotation.z);
+			transformedVertex = vec3RotateX(transformedVertex, mesh.rotation.x);
+			transformedVertex = vec3RotateY(transformedVertex, mesh.rotation.y);
+			transformedVertex = vec3RotateZ(transformedVertex, mesh.rotation.z);
 
 			// Translate vertex away from camera
 			transformedVertex.z -= cameraPosition.z;
@@ -152,6 +159,12 @@ void processInput(void) {
 	}
 }
 
+void freeResources(void) {
+	array_free(mesh.faces);
+	array_free(mesh.verts);
+	free(colorBuffer);
+}
+
 int main(int argc, char* args[]) {
 
 	isRunning = initializeWindow();
@@ -167,6 +180,7 @@ int main(int argc, char* args[]) {
 	}
 	
 	destroyWindow();
+	freeResources();
 
 	return 0;
 }
