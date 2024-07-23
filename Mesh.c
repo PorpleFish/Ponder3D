@@ -9,7 +9,6 @@
 
 #pragma warning (disable : 4996)
 
-
 mesh_t mesh = {
 	.verts = NULL,
 	.faces = NULL,
@@ -160,38 +159,7 @@ bool loadObj(const char* fileName)
 	while (fgets(buffer, maxLineLength, fp)) {
 		if (buffer[0] == 'v' && buffer[1] == ' ') {
 			loadVert(buffer);
-			//for (int i = 2; i < strlen(buffer); i++) {
-			//	ch[i] = buffer[i];
-			//	if (buffer[i] == ' ') {
-			//		break;
-			//	}
-			//}
-			//nextVert.x = atof(ch);
-			//ch[0] = '\0';
-
-			//for (int i = 11; i < strlen(buffer); i++) {
-			//	ch[i] = buffer[i];
-			//	if (buffer[i] == ' ') {
-			//		break;
-			//	}
-			//}
-			//nextVert.y = atof(ch);
-			//ch[0] = '\0';
-
-			//for (int i = 20; i < strlen(buffer); i++) {
-			//	ch[i] = buffer[i];
-			//	if (buffer[i] == ' ') {
-			//		break;
-			//	}
-			//}
-			//nextVert.z = atof(ch);
-			//ch[0] = '\0';
-
-			//printf("%s\n", buffer);
-			//printf("[VERT]	Adding a vert with position of X: %d Y: %d Z: %d\n", nextVert.x, nextVert.y, nextVert.z);
-			//array_push(mesh.verts, nextVert);
 		}
-
 		if (buffer[0] == 'f') {
 			loadFace(buffer);
 		}

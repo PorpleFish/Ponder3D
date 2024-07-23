@@ -119,10 +119,41 @@ void drawLineDDA(int x0, int y0, int x1, int y1, uint32_t color) {
 	}
 }
 
+void drawLineBres(int x0, int y0, int x1, int y1, uint32_t color) {
+
+	int deltaX = x1 - x0;
+	int deltaY = y1 - y0;
+
+	int yi = 1;
+
+	// If deltaY is less than 0, set Y Index as -1 and invert deltaY
+	if (deltaY < 0) {
+		yi = -1;
+		deltaY = -deltaY;
+	}
+	
+	int delta = (2 * deltaY) - deltaX;
+
+	int y = y0;
+
+	for (int x = x0; x < x1; x++) {
+
+		drawPixel(x, y, color);
+
+		if (delta > 0) {
+			y += yi;
+			delta += 2 * (deltaX - deltaY);
+		}
+		else {
+			delta += 2 * deltaY;
+		}
+	}
+}
+
 void drawTri(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
-	drawLineDDA(x0, y0, x1, y1, color);
-	drawLineDDA(x1, y1, x2, y2, color);
-	drawLineDDA(x2, y2, x0, y0, color);
+	drawLineBres(x0, y0, x1, y1, color);
+	drawLineBres(x1, y1, x2, y2, color);
+	drawLineBres(x2, y2, x0, y0, color);
 }
 
 void renderColorBuffer(void) {

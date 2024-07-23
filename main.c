@@ -7,6 +7,7 @@
 #include "Display.h"
 #include "Vector.h"
 #include "Mesh.h"
+#include "Color.h"
 
 ///////////////////////////////////////////
 /// Array of Tris to render
@@ -23,6 +24,7 @@ float fovFactor = 1280;
 
 bool isRunning = false;
 int previousFrameTime = 0;
+color_t currentColor;
 
 ///////////////////////////////////////////
 /// Initialize variables and game objects
@@ -44,8 +46,11 @@ void setup(void) {
 	// Loads the cube values in the mesh data structure
 	//loadCubeMeshData();
 	loadObj("Assets/Table_Scene.obj");
+	//loadObj("Assets/Carter 0w0.obj");
 
-	printf("%d", array_length(mesh.verts));
+	printf("[MAIN]	Vert count: %d", array_length(mesh.verts));
+	//color_t currentColor = HSLAToColor(147.0f, 25.0f, 49.0f, 255);
+	currentColor = HSLAToColor(170, 57, 80, 255);
 }
 
 ///////////////////////////////////////////
@@ -125,9 +130,9 @@ void render(void) {
 
 	for (int i = 0; i < triCount; i++) {
 		tri_t triangle = trisToRender[i];
-		drawRect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFF9864FF);
-		drawRect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFF9864FF);
-		drawRect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFF9864FF);
+		drawRect(triangle.points[0].x, triangle.points[0].y, 12, 12, currentColor.color);
+		drawRect(triangle.points[1].x, triangle.points[1].y, 12, 12, currentColor.color);
+		drawRect(triangle.points[2].x, triangle.points[2].y, 12, 12, currentColor.color);
 		drawTri(
 			triangle.points[0].x, triangle.points[0].y, 
 			triangle.points[1].x, triangle.points[1].y, 
