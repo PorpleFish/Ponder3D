@@ -119,8 +119,7 @@ void drawLineDDA(int x0, int y0, int x1, int y1, uint32_t color) {
 	}
 }
 
-void drawLineBres(int x0, int y0, int x1, int y1, uint32_t color) {
-
+void bresenhamLow(int x0, int y0, int x1, int y1, uint32_t color) {
 	int deltaX = x1 - x0;
 	int deltaY = y1 - y0;
 
@@ -131,9 +130,8 @@ void drawLineBres(int x0, int y0, int x1, int y1, uint32_t color) {
 		yi = -1;
 		deltaY = -deltaY;
 	}
-	
-	int delta = (2 * deltaY) - deltaX;
 
+	int delta = (2 * deltaY) - deltaX;
 	int y = y0;
 
 	for (int x = x0; x < x1; x++) {
@@ -146,6 +144,55 @@ void drawLineBres(int x0, int y0, int x1, int y1, uint32_t color) {
 		}
 		else {
 			delta += 2 * deltaY;
+		}
+	}
+}
+
+void bresenhamHigh(int x0, int y0, int x1, int y1, uint32_t color) {
+	int deltaX = x1 - x0;
+	int deltaY = y1 - y0;
+
+	int xi = 1;
+
+	// If deltaY is less than 0, set Y Index as -1 and invert deltaY
+	if (deltaX < 0) {
+		xi = -1;
+		deltaX = -deltaX;
+	}
+
+	int delta = (2 * deltaX) - deltaY;
+	int x = x0;
+
+	for (int y = y0; y < y1; y++) {
+
+		drawPixel(x, y, color);
+
+		if (delta > 0) {
+			x += xi;
+			delta += 2 * (deltaX - deltaY);
+		}
+		else {
+			delta += 2 * deltaX;
+		}
+	}
+}
+
+void drawLineBres(int x0, int y0, int x1, int y1, uint32_t color) {
+
+	if (abs(y1 - y0) < abs(x1 - x0)) {
+		if (x0 > x1) {
+			bresenhamLow(x1, y1, x0, y0, color);
+		}
+		else {
+			bresenhamLow(x0, y0, x1, y1, color);
+		}
+	}
+	else {
+		if (y0 > y1) {
+			bresenhamHigh(x1, y1, x0, y0, color);
+		}
+		else {
+			bresenhamHigh(x0, y0, x1, y1, color);
 		}
 	}
 }
