@@ -50,7 +50,7 @@ void setup(void) {
 
 	printf("[MAIN]	Vert count: %d", array_length(mesh.verts));
 	//color_t currentColor = HSLAToColor(147.0f, 25.0f, 49.0f, 255);
-	currentColor = HSLAToColor(170, 57, 80, 255);
+	currentColor = HSLAToColor(170, 25, 91, 255);
 }
 
 ///////////////////////////////////////////
