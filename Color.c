@@ -28,7 +28,7 @@ float calculateHslX(float c, float hue) {
 	return X / 2;
 }
 
-color_t HSLAToColor(float h, float s, float l, unsigned char a) {
+color_t HSVAToColor(float h, float s, float l, unsigned char a) {
 	// Hue is represented as a rotation around the perimeter
 	// So floor this to below 360! 
 	float hue = fmod(h, 360.0f);
@@ -90,7 +90,7 @@ color_t HSLAToColor(float h, float s, float l, unsigned char a) {
 		(unsigned char)b,
 		a);
 
-	printf("[COLOR]	R = %f\n[COLOR]	G = %f\n[COLOR]	B = %f\n", r, g, b );
+	printf("[COLOR]	R = %u\n[COLOR]	G = %u\n[COLOR]	B = %u\n", (unsigned int)r, (unsigned int)g, (unsigned int)b );
 
 	return returnColor;
 }
