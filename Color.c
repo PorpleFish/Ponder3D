@@ -3,10 +3,11 @@
 color_t RGBAToColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
 	color_t color = { 0x00000000 };
 
-	unsigned int red = (unsigned int)r << 24;
-	unsigned int green = (unsigned int)g << 16;
-	unsigned int blue = (unsigned int)b << 8;
-	unsigned int alpha = (unsigned int)a;
+	unsigned int alpha = (unsigned int)a << 24;
+	unsigned int red = (unsigned int)r << 16;
+	unsigned int green = (unsigned int)g << 8;
+	unsigned int blue = (unsigned int)b << 0;
+
 
 	color.color = color.color | red;
 	color.color = color.color | green;
@@ -19,11 +20,6 @@ color_t RGBAToColor(unsigned char r, unsigned char g, unsigned char b, unsigned 
 float calculateHslX(float c, float hue) {
 	float X;
 
-	//X = fmod((hue / 60), 2);
-	//X = abs(X - 1);
-	//X = 1 - X;
-	//X = c * X;
-
 	X = (c * (1.0f - abs(hue / 60.0f)*fmod(2.0f, 1.0f)));
 	return X / 2;
 }
@@ -31,21 +27,21 @@ float calculateHslX(float c, float hue) {
 color_t HSVAToColor(float h, float s, float l, unsigned char a) {
 	// Hue is represented as a rotation around the perimeter
 	// So floor this to below 360! 
-	float hue = fmod(h, 360.0f);
-	float saturation = s / 100.0f;
-	float luminance = l / 100.0f;
+	float hue = fmod(h, 360);
+	float saturation = s / 100;
+	float luminance = l / 100;
 
 	float range = luminance  * saturation;
 	float maxRGB = luminance;
 	float minRGB = maxRGB - range;
 	// Find the position along the gradient we'll be using for the RGB
-	float huePrime = hue / 60.0;
-	float gradient_up = fmod(huePrime, 1.0);
-	float gradient_down = 1.0 - fmod(huePrime, 1.0);
+	float huePrime = hue / 60;
+	float gradient_up = fmod(huePrime, 1);
+	float gradient_down = 1 - fmod(huePrime, 1);
 
-	float r = 0;
-	float g = 0;
-	float b = 0;
+	double r = 0;
+	double g = 0;
+	double b = 0;
 
 	// Hue determines which 1/6th of the color wheel we're in 
 	// Using this we can find which values to use for RGB! 
@@ -84,13 +80,15 @@ color_t HSVAToColor(float h, float s, float l, unsigned char a) {
 	g *= 255;
 	b *= 255;
 
-	color_t returnColor = RGBAToColor(
-		(unsigned char)r,
-		(unsigned char)g,
-		(unsigned char)b,
-		a);
+	r = r + 0.5 - (r < 0);
+	g = g + 0.5 - (g < 0);
+	b = b + 0.5 - (b < 0);
 
-	printf("[COLOR]	R = %u\n[COLOR]	G = %u\n[COLOR]	B = %u\n", (unsigned int)r, (unsigned int)g, (unsigned int)b );
+	int red = (int)r;
+	int gre = (int)g;
+	int blu = (int)b;
+
+	color_t returnColor = RGBAToColor((unsigned char)red, (unsigned char)gre, (unsigned char)blu, a);
 
 	return returnColor;
 }

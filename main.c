@@ -18,13 +18,14 @@ tri_t* trisToRender = NULL;
 ///////////////////////////////////////////
 /// Variables for execution and game loop
 ///////////////////////////////////////////
-
 vec3_t cameraPosition = { .x = 0, .y = 0, .z = -5 };
-float fovFactor = 1280;
+float fovFactor = 640;
 
 bool isRunning = false;
 int previousFrameTime = 0;
 color_t currentColor;
+int* distanceOfTri = NULL;
+int distance;
 
 ///////////////////////////////////////////
 /// Initialize variables and game objects
@@ -42,15 +43,10 @@ void setup(void) {
 		windowWidth,
 		windowHeight
 	);
+	loadObj("Assets/SloamHead.obj");
 
-	// Loads the cube values in the mesh data structure
-	//loadCubeMeshData();
-	loadObj("Assets/Table_Scene.obj");
-	//loadObj("Assets/Carter 0w0.obj");
-
-	printf("[MAIN]	Vert count: %d", array_length(mesh.verts));
-	//color_t currentColor = HSLAToColor(147.0f, 25.0f, 49.0f, 255);
-	currentColor = HSVAToColor(170, 25, 91, 255);
+	printf("[MAIN]	Vert count: %d\n", array_length(mesh.verts));
+	currentColor = HSVAToColor(24, 83, 87, 255);
 }
 
 ///////////////////////////////////////////
@@ -66,29 +62,20 @@ vec2_t project(vec3_t point) {
 }
 
 void update(void) {
-	// Make a timeToWait variable
-	int timeToWait = FRAME_TARGET_TIME - (SDL_GetTicks() - previousFrameTime);
-
-	// Only delay if it's required
-	if(timeToWait > 0 && timeToWait <= FRAME_TARGET_TIME) {
-		// Delay here, OS dependant so it's a bit black-box! 
-		SDL_Delay(timeToWait);
-	}
+	while (!SDL_TICKS_PASSED(SDL_GetTicks(), previousFrameTime + FRAME_TARGET_TIME));
+	previousFrameTime = SDL_GetTicks();
 
 	// Initialize Triangle Array
 	trisToRender = NULL;
+	distanceOfTri = NULL;
 
-	// Rotate by 0.1 each frame
-	//mesh.rotation.x += 0.01;
-	mesh.rotation.y += 0.01;
-	//mesh.rotation.z += 0.01;
+	mesh.rotation.y += 0.0065;
 
-	// Loop through mesh faces
 	int faceCount = array_length(mesh.faces);
 
 	for (int i = 0; i < faceCount; i++) {
 		face_t meshFace = mesh.faces[i]; // Set temporary face
-		
+
 		vec3_t faceVertices[3];
 		faceVertices[0] = mesh.verts[meshFace.a - 1];
 		faceVertices[1] = mesh.verts[meshFace.b - 1];
@@ -96,7 +83,8 @@ void update(void) {
 
 		tri_t projectedTri;
 
-		// Loop all three vertices and apply transformations 
+		vec3_t transformedVerts[3];
+
 		for (int j = 0; j < 3; j++) {
 			vec3_t transformedVertex = faceVertices[j];
 
@@ -108,17 +96,48 @@ void update(void) {
 			// Translate vertex away from camera
 			transformedVertex.z -= cameraPosition.z;
 
+			transformedVerts[j] = transformedVertex;
+		}
+
+		// TODO: Check backface culling, then make the following loop only run on tris that should be projected
+		vec3_t vecA = transformedVerts[0]; /*   A   */
+		vec3_t vecB = transformedVerts[1]; /*  / \  */
+		vec3_t vecC = transformedVerts[2]; /* B - C */
+
+		// Get the vector between AB and AC
+		vec3_t vecAB = vec3_sub(vecB, vecA);
+		vec3_t vecAC = vec3_sub(vecC, vecA);
+
+		// Get the normal of the current triangle, the perpendicular angle from the tri
+		vec3_t vecN = vec3_cross(vecAB, vecAC);
+
+
+		// Loop all 3 vertices to perform projection: 
+		for (int j = 0; j < 3; j++) {
 			// Project current vertex
-			vec2_t projectedPoint = project(transformedVertex);
+			vec2_t projectedPoint = project(transformedVerts[j]);
 
 			// Scale and translate the projected points to the middle of the screen 
 			projectedPoint.x += ( windowWidth  / 2 );
 			projectedPoint.y += ( windowHeight / 2 );
 
 			projectedTri.points[j] = projectedPoint;
+			if (j == 1) {
+				float distanceAsFloat = transformedVerts[j].z;
+				//distance = (int)-distanceAsFloat;
+				distance = ((int)(distanceAsFloat * 100)) - 500;
+				distance = abs(distance);
+				if (distance < 0) {
+					distance = 0;
+				}
+				else if (distance > 100) {
+					distance = 100;
+				}
+			}
 		}
 		// Save the projected triangle in the array of triangles to render.
 		array_push(trisToRender, projectedTri);
+		array_push(distanceOfTri, distance);
 	}
 }
 
@@ -130,9 +149,11 @@ void render(void) {
 
 	for (int i = 0; i < triCount; i++) {
 		tri_t triangle = trisToRender[i];
-		drawRect(triangle.points[0].x, triangle.points[0].y, 12, 12, currentColor.color);
-		drawRect(triangle.points[1].x, triangle.points[1].y, 12, 12, currentColor.color);
-		drawRect(triangle.points[2].x, triangle.points[2].y, 12, 12, currentColor.color);
+		color_t color = HSVAToColor(250, distanceOfTri[i], 84, 255);
+		drawRect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, color.color);
+		drawRect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, currentColor.color);
+		drawRect(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, currentColor.color);
+
 		drawTri(
 			triangle.points[0].x, triangle.points[0].y, 
 			triangle.points[1].x, triangle.points[1].y, 
@@ -142,6 +163,7 @@ void render(void) {
 
 	// Clear array of triangles to render here
 	array_free(trisToRender);
+	array_free(distanceOfTri);
 
 	renderColorBuffer();
 	clearColorBuffer(0xFF000000);

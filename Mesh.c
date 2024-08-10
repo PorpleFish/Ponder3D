@@ -59,45 +59,6 @@ void loadCubeMeshData(void) {
 	}
 }
 
-void loadVert(char* line) {
-	vec3_t nextVert = { .x = 0, .y = 0, .z = 0 };
-	
-	int index = 0;
-	int count = 0;
-
-	while (line[index] != '\n') {
-		if (line[index] == ' ') {
-			char numberToAdd[16] = { 0 };
-			index += 1;
-			int f_index = 0;
-
-			while (line[index] != ' ' && line[index] != '\n') {
-				numberToAdd[f_index] = line[index];
-				index += 1;
-				f_index += 1;
-			}
-
-			index -= 1;
-			float val = atof(numberToAdd);
-
-			if (count == 0) {
-				nextVert.x = val;
-			}
-			else if (count == 1) {
-				nextVert.y = val;
-			}
-			else if (count == 2) {
-				nextVert.z = val;
-			}
-
-			count += 1;
-		}
-		
-		index += 1;
-	}
-	array_push(mesh.verts, nextVert);
-}
-
 void loadFace(char* line) {
 	face_t nextFace = { .a = 0, .b = 0, .c = 0 };
 
@@ -138,17 +99,7 @@ void loadFace(char* line) {
 bool loadObj(const char* fileName)
 {
 	FILE* fp = fopen(fileName, "r");
-	char ch[64];
-	const unsigned maxLineLength = 64;
-	char buffer[64];
-
-	bool isVertIndex = false;
-	bool shouldGoToNextVert = false;
-	char* vertIndexBuffer = NULL;
-	int currentFacePoint = 0;
-
-	vec3_t nextVert;
-	face_t nextFace = { .a = 0, .b = 0, .c = 0 };
+	char buffer[1024];
 
 	printf("[FILE IO]	Loading in OBJ: %s\n", fileName);
 
@@ -156,14 +107,31 @@ bool loadObj(const char* fileName)
 		return false;
 	}
 
-	while (fgets(buffer, maxLineLength, fp)) {
-		if (buffer[0] == 'v' && buffer[1] == ' ') {
-			loadVert(buffer);
+	while (fgets(buffer, 1024, fp)) {
+		if (strncmp(buffer, "v ", 2) == 0) {
+			vec3_t nextVert;
+			sscanf(buffer, "v %f %f %f", &nextVert.x, &nextVert.y, &nextVert.z);
+			array_push(mesh.verts, nextVert);
 		}
-		if (buffer[0] == 'f') {
-			loadFace(buffer);
-		}
-	}
+		if (strncmp(buffer, "f ", 2) == 0) {
+			int vertIndices[3];
+			int textureCoordinates[3];
+			int normalIndices[3];
 
+			sscanf(buffer, "f %d/%d/%d %d/%d/%d %d/%d/%d", 
+				&vertIndices[0], &textureCoordinates[0], &normalIndices[0],
+				&vertIndices[1], &textureCoordinates[1], &normalIndices[1], 
+				&vertIndices[2], &textureCoordinates[2], &normalIndices[2]
+			);
+
+			face_t nextFace = {
+			.a = vertIndices[0],
+			.b = vertIndices[1],
+			.c = vertIndices[2]
+			};
+			array_push(mesh.faces, nextFace);
+		}
+
+	}
 	return true;
 }
