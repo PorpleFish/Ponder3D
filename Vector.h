@@ -38,5 +38,6 @@ vec3_t vec3_cross(vec3_t a, vec3_t b);
 vec3_t vec3RotateX(vec3_t v, float angle);
 vec3_t vec3RotateY(vec3_t v, float angle);
 vec3_t vec3RotateZ(vec3_t v, float angle);
+vec2_t vec3_project(vec3_t point, float fovFactor);
 
 #endif

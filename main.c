@@ -18,14 +18,13 @@ tri_t* trisToRender = NULL;
 ///////////////////////////////////////////
 /// Variables for execution and game loop
 ///////////////////////////////////////////
-vec3_t cameraPosition = { .x = 0, .y = 0, .z = -5 };
+
+vec3_t cameraPosition = { 0, 0, 0 };
 float fovFactor = 640;
 
 bool isRunning = false;
 int previousFrameTime = 0;
 color_t currentColor;
-int* distanceOfTri = NULL;
-int distance;
 
 ///////////////////////////////////////////
 /// Initialize variables and game objects
@@ -43,22 +42,10 @@ void setup(void) {
 		windowWidth,
 		windowHeight
 	);
-	loadObj("Assets/SloamHead.obj");
+	loadObj("Assets/Cube.obj");
 
 	printf("[MAIN]	Vert count: %d\n", array_length(mesh.verts));
 	currentColor = HSVAToColor(24, 83, 87, 255);
-}
-
-///////////////////////////////////////////
-/// Function that turns a Vec3D into a Vec2D
-///////////////////////////////////////////
-
-vec2_t project(vec3_t point) {
-	vec2_t projectedPoint = {
-		.x = (fovFactor * point.x) / point.z,
-		.y = (fovFactor * point.y) / point.z
-	};
-	return projectedPoint;
 }
 
 void update(void) {
@@ -67,9 +54,10 @@ void update(void) {
 
 	// Initialize Triangle Array
 	trisToRender = NULL;
-	distanceOfTri = NULL;
 
-	mesh.rotation.y += 0.0065;
+	mesh.rotation.x += 0.008;
+	mesh.rotation.y += 0.008;
+	mesh.rotation.z += 0.008;
 
 	int faceCount = array_length(mesh.faces);
 
@@ -94,50 +82,43 @@ void update(void) {
 			transformedVertex = vec3RotateZ(transformedVertex, mesh.rotation.z);
 
 			// Translate vertex away from camera
-			transformedVertex.z -= cameraPosition.z;
+			transformedVertex.z += 5;
 
 			transformedVerts[j] = transformedVertex;
 		}
 
-		// TODO: Check backface culling, then make the following loop only run on tris that should be projected
 		vec3_t vecA = transformedVerts[0]; /*   A   */
 		vec3_t vecB = transformedVerts[1]; /*  / \  */
-		vec3_t vecC = transformedVerts[2]; /* B - C */
+		vec3_t vecC = transformedVerts[2]; /* C - B */
 
 		// Get the vector between AB and AC
 		vec3_t vecAB = vec3_sub(vecB, vecA);
 		vec3_t vecAC = vec3_sub(vecC, vecA);
 
 		// Get the normal of the current triangle, the perpendicular angle from the tri
-		vec3_t vecN = vec3_cross(vecAB, vecAC);
+		vec3_t vertexNormal = vec3_cross(vecAB, vecAC);
 
+		// Find the vector between point A and the camera
+		vec3_t cameraRay = vec3_sub(cameraPosition, vecA);
+
+		// Find how aligned the camera is with the point the camera is facing
+		float dotNormalCamera = vec3_dot(vertexNormal, cameraRay);
+
+		// Skip over non-camera-facing faces
+		if (dotNormalCamera < 0) {
+			continue;
+		}
 
 		// Loop all 3 vertices to perform projection: 
 		for (int j = 0; j < 3; j++) {
-			// Project current vertex
-			vec2_t projectedPoint = project(transformedVerts[j]);
+			vec2_t projectedPoint = vec3_project(transformedVerts[j], fovFactor);
 
-			// Scale and translate the projected points to the middle of the screen 
 			projectedPoint.x += ( windowWidth  / 2 );
 			projectedPoint.y += ( windowHeight / 2 );
 
 			projectedTri.points[j] = projectedPoint;
-			if (j == 1) {
-				float distanceAsFloat = transformedVerts[j].z;
-				//distance = (int)-distanceAsFloat;
-				distance = ((int)(distanceAsFloat * 100)) - 500;
-				distance = abs(distance);
-				if (distance < 0) {
-					distance = 0;
-				}
-				else if (distance > 100) {
-					distance = 100;
-				}
-			}
 		}
-		// Save the projected triangle in the array of triangles to render.
 		array_push(trisToRender, projectedTri);
-		array_push(distanceOfTri, distance);
 	}
 }
 
@@ -149,8 +130,7 @@ void render(void) {
 
 	for (int i = 0; i < triCount; i++) {
 		tri_t triangle = trisToRender[i];
-		color_t color = HSVAToColor(250, distanceOfTri[i], 84, 255);
-		drawRect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, color.color);
+		drawRect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, currentColor.color);
 		drawRect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, currentColor.color);
 		drawRect(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, currentColor.color);
 
@@ -163,7 +143,6 @@ void render(void) {
 
 	// Clear array of triangles to render here
 	array_free(trisToRender);
-	array_free(distanceOfTri);
 
 	renderColorBuffer();
 	clearColorBuffer(0xFF000000);
@@ -205,9 +184,7 @@ int main(int argc, char* args[]) {
 		update();
 		render();
 	}
-	
 	destroyWindow();
 	freeResources();
-
 	return 0;
 }

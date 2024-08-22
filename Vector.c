@@ -16,7 +16,6 @@ vec2_t vec2_add(vec2_t a, vec2_t b) {
 	};
 	return returnValue;
 }
-
 	
 vec2_t vec2_sub(vec2_t a, vec2_t b) {
 	vec2_t returnValue = {
@@ -102,7 +101,7 @@ float vec3_dot(vec3_t a, vec3_t b) {
 vec3_t vec3_cross(vec3_t a, vec3_t b) {
 	vec3_t returnValue = {
 		.x = a.y * b.z - a.z * b.y,
-		.y = a.z * b.x - a.z * b.z,
+		.y = a.z * b.x - a.x * b.z,
 		.z = a.x * b.y - a.y * b.x
 	};
 	return returnValue;
@@ -134,3 +133,11 @@ vec3_t vec3RotateZ(vec3_t v, float angle) {
 	};
 	return rotated_vector;
 } 
+
+vec2_t vec3_project(vec3_t point, float fovFactor) {
+	vec2_t projectedPoint = {
+		.x = (fovFactor * point.x) / point.z,
+		.y = (fovFactor * point.y) / point.z
+	};
+	return projectedPoint;
+}
