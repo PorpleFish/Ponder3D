@@ -87,19 +87,24 @@ void update(void) {
 			transformedVerts[j] = transformedVertex;
 		}
 
-		vec3_t vecA = transformedVerts[0]; /*   A   */
-		vec3_t vecB = transformedVerts[1]; /*  / \  */
-		vec3_t vecC = transformedVerts[2]; /* C - B */
+		//A = 0   A  
+		//B = 1  / \ 
+		//C = 2 C - B
 
 		// Get the vector between AB and AC
-		vec3_t vecAB = vec3_sub(vecB, vecA);
-		vec3_t vecAC = vec3_sub(vecC, vecA);
+		vec3_t vecAB = vec3_sub(transformedVerts[1], transformedVerts[0]);
+		vec3_t vecAC = vec3_sub(transformedVerts[2], transformedVerts[0]);
+		vec3_normalize(&vecAB);
+		vec3_normalize(&vecAC);
 
 		// Get the normal of the current triangle, the perpendicular angle from the tri
 		vec3_t vertexNormal = vec3_cross(vecAB, vecAC);
 
+		// Normalize the face normal
+		vec3_normalize(&vertexNormal);
+
 		// Find the vector between point A and the camera
-		vec3_t cameraRay = vec3_sub(cameraPosition, vecA);
+		vec3_t cameraRay = vec3_sub(cameraPosition, transformedVerts[0]);
 
 		// Find how aligned the camera is with the point the camera is facing
 		float dotNormalCamera = vec3_dot(vertexNormal, cameraRay);
@@ -128,18 +133,21 @@ void render(void) {
 	// Loop all projected triangles and render them
 	int triCount = array_length(trisToRender);
 
-	for (int i = 0; i < triCount; i++) {
-		tri_t triangle = trisToRender[i];
-		drawRect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, currentColor.color);
-		drawRect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, currentColor.color);
-		drawRect(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, currentColor.color);
+	//for (int i = 0; i < triCount; i++) {
+	//	tri_t triangle = trisToRender[i];
+	//	drawRect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, currentColor.color);
+	//	drawRect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, currentColor.color);
+	//	drawRect(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, currentColor.color);
 
-		drawTri(
-			triangle.points[0].x, triangle.points[0].y, 
-			triangle.points[1].x, triangle.points[1].y, 
-			triangle.points[2].x, triangle.points[2].y, 
-			0xFFE0CA3C);
-	}
+	//	drawTri(
+	//		triangle.points[0].x, triangle.points[0].y, 
+	//		triangle.points[1].x, triangle.points[1].y, 
+	//		triangle.points[2].x, triangle.points[2].y, 
+	//		0xFFE0CA3C);
+	//}
+
+	drawTri(300, 100, 50, 400, 500, 700, 0xFFFF0000);
+	drawTri_flat(300, 100, 50, 400, 500, 700, 0xFF000000);
 
 	// Clear array of triangles to render here
 	array_free(trisToRender);
