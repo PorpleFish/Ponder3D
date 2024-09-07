@@ -3,11 +3,14 @@
 
 #include "stdint.h"
 #include "vector.h"
+#include "Display.h"
+#include "Color.h"
 
 typedef struct { // Stores the index of the verts in the mesh array
 	int a;
 	int b;
 	int c;
+	color_t color;
 } face_t;
 
 typedef struct { // Stores the projected position of the vec2 points of the triangle on the screen

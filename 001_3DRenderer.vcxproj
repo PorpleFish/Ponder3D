@@ -152,6 +152,7 @@
     <ClInclude Include="Color.h" />
     <ClInclude Include="Display.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>
   <ItemGroup>

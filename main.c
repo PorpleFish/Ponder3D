@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <SDL.h>
 
+#include "Settings.h"
 #include "array.h"
 #include "Display.h"
 #include "Vector.h"
@@ -19,12 +20,16 @@ tri_t* trisToRender = NULL;
 /// Variables for execution and game loop
 ///////////////////////////////////////////
 
+settings_t settings;
+
 vec3_t cameraPosition = { 0, 0, 0 };
 float fovFactor = 640;
 
 bool isRunning = false;
 int previousFrameTime = 0;
 color_t currentColor;
+
+//DisplayState currentState = FlatWires;
 
 ///////////////////////////////////////////
 /// Initialize variables and game objects
@@ -42,10 +47,16 @@ void setup(void) {
 		windowWidth,
 		windowHeight
 	);
-	loadObj("Assets/Cube.obj");
+	//loadObj("Assets/cube.obj");
+	loadCubeMeshData();
 
 	printf("[MAIN]	Vert count: %d\n", array_length(mesh.verts));
 	currentColor = HSVAToColor(24, 83, 87, 255);
+
+	settings.showVerts		 = true;
+	settings.showWireframe   = true;
+	settings.showTris	     = true;
+	settings.cull		     = cull_backface;
 }
 
 void update(void) {
@@ -87,10 +98,6 @@ void update(void) {
 			transformedVerts[j] = transformedVertex;
 		}
 
-		//A = 0   A  
-		//B = 1  / \ 
-		//C = 2 C - B
-
 		// Get the vector between AB and AC
 		vec3_t vecAB = vec3_sub(transformedVerts[1], transformedVerts[0]);
 		vec3_t vecAC = vec3_sub(transformedVerts[2], transformedVerts[0]);
@@ -110,7 +117,7 @@ void update(void) {
 		float dotNormalCamera = vec3_dot(vertexNormal, cameraRay);
 
 		// Skip over non-camera-facing faces
-		if (dotNormalCamera < 0) {
+		if (dotNormalCamera < 0 && settings.cull == cull_backface) {
 			continue;
 		}
 
@@ -133,21 +140,31 @@ void render(void) {
 	// Loop all projected triangles and render them
 	int triCount = array_length(trisToRender);
 
-	//for (int i = 0; i < triCount; i++) {
-	//	tri_t triangle = trisToRender[i];
-	//	drawRect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, currentColor.color);
-	//	drawRect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, currentColor.color);
-	//	drawRect(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, currentColor.color);
+	for (int i = 0; i < triCount; i++) {
+		tri_t triangle = trisToRender[i];
 
-	//	drawTri(
-	//		triangle.points[0].x, triangle.points[0].y, 
-	//		triangle.points[1].x, triangle.points[1].y, 
-	//		triangle.points[2].x, triangle.points[2].y, 
-	//		0xFFE0CA3C);
-	//}
+		if (settings.showTris) { 
+			drawTri_flat(
+				triangle.points[0].x, triangle.points[0].y,
+				triangle.points[1].x, triangle.points[1].y,
+				triangle.points[2].x, triangle.points[2].y,
+				0xFFE0CA3C);
+		}
 
-	drawTri(300, 100, 50, 400, 500, 700, 0xFFFF0000);
-	drawTri_flat(300, 100, 50, 400, 500, 700, 0xFF000000);
+		if (settings.showWireframe) {
+			drawTri(
+				triangle.points[0].x, triangle.points[0].y,
+				triangle.points[1].x, triangle.points[1].y,
+				triangle.points[2].x, triangle.points[2].y,
+				0xFFE00000);
+		}
+
+		if (settings.showVerts) {
+			drawRect(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, currentColor.color);
+			drawRect(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, currentColor.color);
+			drawRect(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, currentColor.color);
+		}
+	}
 
 	// Clear array of triangles to render here
 	array_free(trisToRender);
@@ -169,6 +186,26 @@ void processInput(void) {
 	case SDL_KEYDOWN:
 		if (event.key.keysym.sym == SDLK_ESCAPE)
 			isRunning = false;
+		if (event.key.keysym.sym == SDLK_1)
+		{
+			printf("1 pressed\n");
+			settings.showVerts = !settings.showVerts;
+		}
+		if (event.key.keysym.sym == SDLK_2)
+		{
+			printf("2 pressed\n");
+			settings.showWireframe = !settings.showWireframe;
+		}
+		if (event.key.keysym.sym == SDLK_3)
+		{
+			printf("3 pressed\n");
+			settings.showTris = !settings.showTris;
+		}
+		if (event.key.keysym.sym == SDLK_4)
+		{
+			printf("4 pressed\n");
+			settings.cull = (settings.cull + 1) % 2;
+		}
 		break;
 	}
 }
