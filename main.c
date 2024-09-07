@@ -80,8 +80,6 @@ void update(void) {
 		faceVertices[1] = mesh.verts[meshFace.b - 1];
 		faceVertices[2] = mesh.verts[meshFace.c - 1];
 
-		tri_t projectedTri;
-
 		vec3_t transformedVerts[3];
 
 		for (int j = 0; j < 3; j++) {
@@ -121,15 +119,26 @@ void update(void) {
 			continue;
 		}
 
+		vec2_t projectedPoints[3];
+
 		// Loop all 3 vertices to perform projection: 
 		for (int j = 0; j < 3; j++) {
-			vec2_t projectedPoint = vec3_project(transformedVerts[j], fovFactor);
+			projectedPoints[j] = vec3_project(transformedVerts[j], fovFactor);
 
-			projectedPoint.x += ( windowWidth  / 2 );
-			projectedPoint.y += ( windowHeight / 2 );
-
-			projectedTri.points[j] = projectedPoint;
+			projectedPoints[j].x += ( windowWidth  / 2 );
+			projectedPoints[j].y += ( windowHeight / 2 );
 		}
+
+		tri_t projectedTri = {
+			.points = {
+				{projectedPoints[0].x, projectedPoints[0].y},
+				{projectedPoints[1].x, projectedPoints[1].y},
+				{projectedPoints[2].x, projectedPoints[2].y}
+			},
+			.color = meshFace.color,
+			.depth = (transformedVerts[0].z + transformedVerts[1].z + transformedVerts[2].z) / 3
+		};
+
 		array_push(trisToRender, projectedTri);
 	}
 }
@@ -148,7 +157,7 @@ void render(void) {
 				triangle.points[0].x, triangle.points[0].y,
 				triangle.points[1].x, triangle.points[1].y,
 				triangle.points[2].x, triangle.points[2].y,
-				0xFFE0CA3C);
+				triangle.color.color);
 		}
 
 		if (settings.showWireframe) {

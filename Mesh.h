@@ -11,7 +11,7 @@
 extern vec3_t cubeVertices[N_CUBE_VERTICES];
 extern face_t cubeFaces[N_CUBE_FACES];
 
-typedef struct {
+typedef struct { // Stores an array for verts, faces and translation data for a single mesh
 	vec3_t* verts; // Dynamic array of vertices
 	face_t* faces; // Dynamic array of faces
 	// vec3_t position;
