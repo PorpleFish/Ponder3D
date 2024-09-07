@@ -14,6 +14,7 @@
 /// Array of Tris to render
 ///////////////////////////////////////////
 
+tri_t* trisPreSort = NULL;
 tri_t* trisToRender = NULL;
 
 ///////////////////////////////////////////
@@ -65,6 +66,7 @@ void update(void) {
 
 	// Initialize Triangle Array
 	trisToRender = NULL;
+	trisPreSort = NULL;
 
 	mesh.rotation.x += 0.008;
 	mesh.rotation.y += 0.008;
@@ -138,6 +140,8 @@ void update(void) {
 			.color = meshFace.color,
 			.depth = (transformedVerts[0].z + transformedVerts[1].z + transformedVerts[2].z) / 3
 		};
+		array_push(trisPreSort, projectedTri);
+
 
 		array_push(trisToRender, projectedTri);
 	}

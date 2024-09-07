@@ -40,3 +40,10 @@ void array_free(void* array) {
         free(ARRAY_RAW_DATA(array));
     }
 }
+
+void array_swap(auto* a, auto* b) {
+    auto temp = *a;
+    *a = *b;
+    *b = temp;
+    return;
+}

@@ -8,7 +8,8 @@
     } while (0);
 
 void* array_hold(void* array, int count, int item_size);
-int array_length(void* array);
-void array_free(void* array);
+int   array_length(void* array);
+void  array_free(void* array);
+void  array_swap(void* a, void* b);
 
 #endif
