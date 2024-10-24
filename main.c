@@ -14,7 +14,6 @@
 /// Array of Tris to render
 ///////////////////////////////////////////
 
-tri_t* trisPreSort = NULL;
 tri_t* trisToRender = NULL;
 
 ///////////////////////////////////////////
@@ -140,10 +139,19 @@ void update(void) {
 			.color = meshFace.color,
 			.depth = (transformedVerts[0].z + transformedVerts[1].z + transformedVerts[2].z) / 3
 		};
-		array_push(trisPreSort, projectedTri);
-
-
 		array_push(trisToRender, projectedTri);
+	}
+	int triCount = array_length(trisToRender);
+	for (int i = 0; i < triCount; i++) {
+		for (int j = 0; j < triCount; j++) {
+			if (trisToRender) {
+				if (trisToRender[i].depth > trisToRender[j].depth) {
+					tri_t temp = trisToRender[i];
+					trisToRender[i] = trisToRender[j];
+					trisToRender[j] = temp;
+				}
+			}
+		}
 	}
 }
 
@@ -245,4 +253,5 @@ int main(int argc, char* args[]) {
 	destroyWindow();
 	freeResources();
 	return 0;
+
 }
