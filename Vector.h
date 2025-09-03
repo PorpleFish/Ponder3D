@@ -2,18 +2,19 @@
 #define VECTOR_H
 
 typedef struct {
-	float x;
-	float y;
+	float x, y;
 }vec2_t;
 
 typedef struct {
-	float x;
-	float y;
-	float z;
+	float x, y, z;
 }vec3_t;
 
+typedef struct {
+	float x, y, z, w;
+}vec4_t;
+
 ///////////////////////////////////////////
-/// Vector 2D Functions
+/// Vector 2 Functions
 ///////////////////////////////////////////
 
 float vec2_length(vec2_t v);
@@ -25,7 +26,7 @@ float vec2_dot(vec2_t a, vec2_t b);
 void vec2_normalize(vec2_t* v);
 
 ///////////////////////////////////////////
-/// Vector 3D Functions
+/// Vector 3 Functions
 ///////////////////////////////////////////
 
 float vec3_length(vec3_t v);
@@ -41,5 +42,12 @@ vec3_t vec3RotateX(vec3_t v, float angle);
 vec3_t vec3RotateY(vec3_t v, float angle);
 vec3_t vec3RotateZ(vec3_t v, float angle);
 vec2_t vec3_project(vec3_t point, float fovFactor);
+
+///////////////////////////////////////////
+/// Vector conversion Functions
+///////////////////////////////////////////
+
+vec4_t vec4FromVec3(vec3_t v);
+vec3_t vec3FromVec4(vec4_t v);
 
 #endif

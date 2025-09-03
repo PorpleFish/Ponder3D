@@ -1,4 +1,4 @@
-#include "vector.h"
+#include "Vector.h"
 #include <math.h>
 
 ///////////////////////////////////////////
@@ -155,4 +155,20 @@ vec2_t vec3_project(vec3_t point, float fovFactor) {
 		.y = (fovFactor * point.y) / point.z
 	};
 	return projectedPoint;
+}
+
+///////////////////////////////////////////
+/// Vector conversion Function Implementations
+///////////////////////////////////////////
+
+vec4_t vec4FromVec3(vec3_t v)
+{
+	vec4_t result = {v.x, v.y, v.z, 1.0};
+	return result;
+}
+
+vec3_t vec3FromVec4(vec4_t v)
+{
+	vec3_t result = { v.x, v.y, v.z};
+	return result;
 }

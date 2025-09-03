@@ -147,6 +147,7 @@
     <ClCompile Include="Color.c" />
     <ClCompile Include="Display.c" />
     <ClCompile Include="Main.c" />
+    <ClCompile Include="Matrix.c" />
     <ClCompile Include="Mesh.c" />
     <ClCompile Include="Tri.c" />
     <ClCompile Include="Vector.c" />
@@ -155,6 +156,7 @@
     <ClInclude Include="Array.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Display.h" />
+    <ClInclude Include="Matrix.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Vector.h" />

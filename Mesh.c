@@ -12,7 +12,9 @@
 mesh_t mesh = {
 	.verts = NULL,
 	.faces = NULL,
-	.rotation = { 0, 0, 0 }
+	.translation = { 0, 0, 5 },
+	.rotation = { 0, 0, 0 },
+	.scale = { 1.0, 1.0, 1.0 }
 };
 
 vec3_t cubeVertices[N_CUBE_VERTICES] = {

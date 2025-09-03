@@ -7,6 +7,7 @@
 #include "array.h"
 #include "Display.h"
 #include "Vector.h"
+#include "Matrix.h"
 #include "Mesh.h"
 #include "Color.h"
 
@@ -50,7 +51,6 @@ void setup(void) {
 	//loadObj("Assets/cube.obj");
 	loadCubeMeshData();
 
-	printf("[MAIN]	Vert count: %d\n", array_length(mesh.verts));
 	currentColor = HSVAToColor(24, 83, 87, 255);
 
 	settings.showVerts		 = true;
@@ -59,7 +59,6 @@ void setup(void) {
 	settings.cull		     = cull_backface;
 }
 
-
 void update(void) {
 	// Static frame rate:
 	// while (!SDL_TICKS_PASSED(SDL_GetTicks(), previousFrameTime + FRAME_TARGET_TIME));
@@ -67,9 +66,20 @@ void update(void) {
 
 	// Initialize Triangle Array
 	trisToRender = NULL;
-	mesh.rotation.x += 0.016;
-	mesh.rotation.y += 0.016;
-	mesh.rotation.z += 0.016;
+
+	mesh.rotation.x += 0.05;
+	mesh.rotation.y += 0.05;
+	mesh.rotation.z += 0.05;
+
+	mesh.scale.x -= 0.0;
+	mesh.scale.y -= 0.0;
+	mesh.scale.z -= 0.0;
+
+	mesh.translation.x += 0.0;
+	mesh.translation.y += 0.0;
+	mesh.translation.z += 0.0;
+
+	mat4_t mesh_transform = mat4_translate(mesh.scale, mesh.translation, mesh.rotation);
 
 	int faceCount = array_length(mesh.faces);
 
@@ -81,25 +91,14 @@ void update(void) {
 		faceVertices[1] = mesh.verts[meshFace.b - 1];
 		faceVertices[2] = mesh.verts[meshFace.c - 1];
 
-		vec3_t transformedVerts[3];
+		vec4_t transformedVerts[3];
 
-		for (int j = 0; j < 3; j++) {
-			vec3_t transformedVertex = faceVertices[j];
-
-			// Apply rotations for this frame
-			transformedVertex = vec3RotateX(transformedVertex, mesh.rotation.x);
-			transformedVertex = vec3RotateY(transformedVertex, mesh.rotation.y);
-			transformedVertex = vec3RotateZ(transformedVertex, mesh.rotation.z);
-
-			// Translate vertex away from camera
-			transformedVertex.z += 5;
-
-			transformedVerts[j] = transformedVertex;
-		}
+		for (int j = 0; j < 3; j++)
+			transformedVerts[j] = mat4_mul_vec4(mesh_transform, vec4FromVec3(faceVertices[j]));
 
 		// Get the vector between AB and AC
-		vec3_t vecAB = vec3_sub(transformedVerts[1], transformedVerts[0]);
-		vec3_t vecAC = vec3_sub(transformedVerts[2], transformedVerts[0]);
+		vec3_t vecAB = vec3_sub(vec3FromVec4(transformedVerts[1]), vec3FromVec4(transformedVerts[0]));
+		vec3_t vecAC = vec3_sub(vec3FromVec4(transformedVerts[2]), vec3FromVec4(transformedVerts[0]));
 		vec3_normalize(&vecAB);
 		vec3_normalize(&vecAC);
 
@@ -110,7 +109,7 @@ void update(void) {
 		vec3_normalize(&vertexNormal);
 
 		// Find the vector between point A and the camera
-		vec3_t cameraRay = vec3_sub(cameraPosition, transformedVerts[0]);
+		vec3_t cameraRay = vec3_sub(cameraPosition, vec3FromVec4(transformedVerts[0]));
 
 		// Find how aligned the camera is with the point the camera is facing
 		float dotNormalCamera = vec3_dot(vertexNormal, cameraRay);
@@ -124,8 +123,7 @@ void update(void) {
 
 		// Loop all 3 vertices to perform projection: 
 		for (int j = 0; j < 3; j++) {
-			projectedPoints[j] = vec3_project(transformedVerts[j], fovFactor);
-
+			projectedPoints[j] = vec3_project(vec3FromVec4(transformedVerts[j]), fovFactor);
 			projectedPoints[j].x += ( windowWidth  / 2 );
 			projectedPoints[j].y += ( windowHeight / 2 );
 		}
