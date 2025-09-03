@@ -18,46 +18,25 @@ int windowHeight = 600;
 ///////////////////////////////////////////
 
 bool initializeWindow(void) {
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		fprintf(stderr, "Error initializing SDL.\n");
 		return false;
 	}
 
-	// Use SQL to query what the fullscreen size should be
-	SDL_DisplayMode displayMode;
-	SDL_GetCurrentDisplayMode(
-		0,
-		&displayMode
-	);
+	// Use SDL to query what the fullscreen size should be
+	int connected_displays;
+	SDL_DisplayMode *displayMode = SDL_GetCurrentDisplayMode(SDL_GetDisplays(&connected_displays)[0], 1);
 
-	windowWidth = displayMode.w;
-	windowHeight = displayMode.h;
+	windowWidth = displayMode->w;
+	windowHeight = displayMode->h;
 
-	// Create an SDL window
-	window = SDL_CreateWindow(
-		"PorpleRender",
-		SDL_WINDOWPOS_CENTERED,
-		SDL_WINDOWPOS_CENTERED,
-		windowWidth,
-		windowHeight,
-		SDL_WINDOW_BORDERLESS
-	);
-	if (!window) {
-		fprintf(stderr, "Error creating SDL window.\n");
+	if (!SDL_CreateWindowAndRenderer("Ponder 3D", windowWidth, windowHeight, SDL_WINDOW_RESIZABLE, &window, &renderer))
+	{
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error creating SDL window.\n");
 		return false;
 	}
+	SDL_SetRenderVSync(renderer, 1);
 
-	// Create an SDL renderer
-	renderer = SDL_CreateRenderer(
-		window,
-		-1,
-		0
-	);
-
-	if (!renderer) {
-		fprintf(stderr, "Error creating SDL renderer.\n");
-		return false;
-	}
 	return true;
 }
 
@@ -169,7 +148,7 @@ void renderColorBuffer(void) {
 		(windowWidth * sizeof(uint32_t))
 	);
 	// Renders the buffer texture, with no subdivision
-	SDL_RenderCopy(
+	SDL_RenderTexture(
 		renderer,
 		colorBufferTexture,
 		NULL,

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 ///////////////////////////////////////////
 /// Global variables

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include "Settings.h"
 #include "array.h"
@@ -59,17 +59,17 @@ void setup(void) {
 	settings.cull		     = cull_backface;
 }
 
+
 void update(void) {
-	while (!SDL_TICKS_PASSED(SDL_GetTicks(), previousFrameTime + FRAME_TARGET_TIME));
+	// Static frame rate:
+	// while (!SDL_TICKS_PASSED(SDL_GetTicks(), previousFrameTime + FRAME_TARGET_TIME));
 	previousFrameTime = SDL_GetTicks();
 
 	// Initialize Triangle Array
 	trisToRender = NULL;
-	trisPreSort = NULL;
-
-	mesh.rotation.x += 0.008;
-	mesh.rotation.y += 0.008;
-	mesh.rotation.z += 0.008;
+	mesh.rotation.x += 0.016;
+	mesh.rotation.y += 0.016;
+	mesh.rotation.z += 0.016;
 
 	int faceCount = array_length(mesh.faces);
 
@@ -200,33 +200,26 @@ void processInput(void) {
 	SDL_Event event;
 	SDL_PollEvent(&event);
 
-	switch (event.type) {
-	case SDL_QUIT:
+	if (event.type == SDL_EVENT_QUIT)isRunning = false;
+	if (event.type != SDL_EVENT_KEY_DOWN) return;
+
+	switch (event.key.key) {
+	case SDLK_ESCAPE:
 		isRunning = false;
 		break;
-	case SDL_KEYDOWN:
-		if (event.key.keysym.sym == SDLK_ESCAPE)
-			isRunning = false;
-		if (event.key.keysym.sym == SDLK_1)
-		{
-			printf("1 pressed\n");
-			settings.showVerts = !settings.showVerts;
-		}
-		if (event.key.keysym.sym == SDLK_2)
-		{
-			printf("2 pressed\n");
-			settings.showWireframe = !settings.showWireframe;
-		}
-		if (event.key.keysym.sym == SDLK_3)
-		{
-			printf("3 pressed\n");
-			settings.showTris = !settings.showTris;
-		}
-		if (event.key.keysym.sym == SDLK_4)
-		{
-			printf("4 pressed\n");
-			settings.cull = (settings.cull + 1) % 2;
-		}
+	case SDLK_1:
+		settings.showVerts = !settings.showVerts;
+		break;
+	case SDLK_2:
+		settings.showWireframe = !settings.showWireframe;
+		break;
+	case SDLK_3:
+		settings.showTris = !settings.showTris;
+		break;
+	case SDLK_4:
+		settings.cull = (settings.cull + 1) % 2;
+		break;
+	default:
 		break;
 	}
 }
@@ -242,8 +235,6 @@ int main(int argc, char* args[]) {
 	isRunning = initializeWindow();
 
 	setup();
-
-	vec3_t myVector = { 2.0, 3.0, -4.0 };
 
 	while (isRunning) {
 		processInput();
