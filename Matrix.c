@@ -157,3 +157,37 @@ mat4_t mat4_translate(vec3_t s, vec3_t t, vec3_t r)
 
 	return result;
 }
+
+mat4_t mat4_persp(float fov, float aspect, float znear, float zfar)
+{
+	mat4_t persp = { {{0}} };
+
+	persp.m[0][0] = aspect * (1 / tan(fov / 2));
+	persp.m[1][1] = 1 / tan(fov / 2);
+	persp.m[2][2] = zfar / (zfar - znear);
+	persp.m[2][3] = (-zfar * znear) / (zfar - znear);
+	persp.m[3][2] = 1.0f;
+
+	return persp;
+	// We have a backup of the pre-transform vector in the W channel, 
+	// the 1 is here so the unchanged value will be there once we apply this Matrix
+	// This value will be super useful for many things later on:
+	//	* Texturing
+	//	* Depth/Height fog
+	//	* Perspective
+	//	* Lighting
+
+}
+
+vec4_t mat4_project(mat4_t projection_matrix, vec4_t v)
+{
+	vec4_t result = mat4_mul_vec4(projection_matrix, v);
+	// if the W isn't 0, then we can use the perspective division
+	if (result.w != 0.0) {
+		result.x /= result.w;
+		result.y /= result.w;
+		result.z /= result.w;
+
+	}
+	return result;
+}

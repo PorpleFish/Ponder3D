@@ -1,0 +1,4 @@
+Things to do after the tutorial
+- Port to C++ 
+- Change from main() to SDL app function callbacks
+- Implement Imgui for parameterizing lighting

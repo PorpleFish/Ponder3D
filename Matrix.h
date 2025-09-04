@@ -29,4 +29,7 @@ mat4_t mat4_rotat_v(vec3_t r);
 
 mat4_t mat4_translate(vec3_t s, vec3_t t, vec3_t r);
 
+mat4_t mat4_persp(float fov, float aspect, float znear, float zfar);
+vec4_t mat4_project(mat4_t projection_matrix, vec4_t v);
+
 #endif

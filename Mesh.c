@@ -12,20 +12,20 @@
 mesh_t mesh = {
 	.verts = NULL,
 	.faces = NULL,
-	.translation = { 0, 0, 5 },
+	.translation = { 0, 0, 0 },
 	.rotation = { 0, 0, 0 },
 	.scale = { 1.0, 1.0, 1.0 }
 };
 
 vec3_t cubeVertices[N_CUBE_VERTICES] = {
-   {.x = -1, .y = -1, .z = -1},
-   {.x = -1, .y = 1, .z = -1},
-   {.x = 1, .y = 1, .z = -1},
-   {.x = 1, .y = -1, .z = -1},
-   {.x = 1, .y = 1, .z = 1},
-   {.x = 1, .y = -1, .z = 1},
-   {.x = -1, .y = 1, .z = 1},
-   {.x = -1, .y = -1, .z = 1}
+   {.x = -10, .y = -10, .z = -10},
+   {.x = -10, .y = 10, .z = -10},
+   {.x = 10, .y = 10, .z = -10},
+   {.x = 10, .y = -10, .z = -10},
+   {.x = 10, .y = 10, .z = 10},
+   {.x = 10, .y = -10, .z = 10},
+   {.x = -10, .y = 10, .z = 10},
+   {.x = -10, .y = -10, .z = 10}
 };
 
 face_t cubeFaces[N_CUBE_FACES] = {

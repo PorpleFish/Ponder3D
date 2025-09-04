@@ -1,4 +1,7 @@
+#define _USE_MATH_DEFINES
+
 #include <stdio.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <SDL3/SDL.h>
@@ -24,7 +27,7 @@ tri_t* trisToRender = NULL;
 settings_t settings;
 
 vec3_t cameraPosition = { 0, 0, 0 };
-float fovFactor = 640;
+mat4_t proj_matrix;
 
 bool isRunning = false;
 int previousFrameTime = 0;
@@ -48,7 +51,17 @@ void setup(void) {
 		windowWidth,
 		windowHeight
 	);
-	//loadObj("Assets/cube.obj");
+
+	printf("[SETUP] Win Width: %d \n", windowWidth);
+	printf("[SETUP] Win Height: %d \n", windowHeight);
+
+	float fov = M_PI / 3.0; // the same as 180/3, or 60deg
+	float aspect = (float)windowHeight / (float)windowWidth;
+	float znear = 0.1;
+	float zfar = 100.0;
+	proj_matrix = mat4_persp(fov, aspect, znear, zfar);
+
+	// loadObj("Assets/cube.obj");
 	loadCubeMeshData();
 
 	currentColor = HSVAToColor(24, 83, 87, 255);
@@ -60,29 +73,29 @@ void setup(void) {
 }
 
 void update(void) {
-	// Static frame rate:
 	// while (!SDL_TICKS_PASSED(SDL_GetTicks(), previousFrameTime + FRAME_TARGET_TIME));
 	previousFrameTime = SDL_GetTicks();
 
 	// Initialize Triangle Array
 	trisToRender = NULL;
 
-	mesh.rotation.x += 0.05;
-	mesh.rotation.y += 0.05;
-	mesh.rotation.z += 0.05;
+	mesh.rotation.x += 0.1;
+	mesh.rotation.y += 0.1;
+	mesh.rotation.z += 0.1;
 
-	mesh.scale.x -= 0.0;
-	mesh.scale.y -= 0.0;
-	mesh.scale.z -= 0.0;
+	mesh.translation.x = 0;
+	mesh.translation.y = 0.0;
+	mesh.translation.z = 35.0;
 
-	mesh.translation.x += 0.0;
-	mesh.translation.y += 0.0;
-	mesh.translation.z += 0.0;
+	mat4_t scale_matrix = mat4_scale_v(mesh.scale);
+	mat4_t translation_matrix = mat4_trans_v(mesh.translation);
+	mat4_t rotation_matrix_x = mat4_rotat_x(mesh.rotation.x);
+	mat4_t rotation_matrix_y = mat4_rotat_y(mesh.rotation.y);
+	mat4_t rotation_matrix_z = mat4_rotat_z(mesh.rotation.z);
 
 	mat4_t mesh_transform = mat4_translate(mesh.scale, mesh.translation, mesh.rotation);
 
 	int faceCount = array_length(mesh.faces);
-
 	for (int i = 0; i < faceCount; i++) {
 		face_t meshFace = mesh.faces[i]; // Set temporary face
 
@@ -93,39 +106,63 @@ void update(void) {
 
 		vec4_t transformedVerts[3];
 
-		for (int j = 0; j < 3; j++)
-			transformedVerts[j] = mat4_mul_vec4(mesh_transform, vec4FromVec3(faceVertices[j]));
-
-		// Get the vector between AB and AC
-		vec3_t vecAB = vec3_sub(vec3FromVec4(transformedVerts[1]), vec3FromVec4(transformedVerts[0]));
-		vec3_t vecAC = vec3_sub(vec3FromVec4(transformedVerts[2]), vec3FromVec4(transformedVerts[0]));
-		vec3_normalize(&vecAB);
-		vec3_normalize(&vecAC);
-
-		// Get the normal of the current triangle, the perpendicular angle from the tri
-		vec3_t vertexNormal = vec3_cross(vecAB, vecAC);
-
-		// Normalize the face normal
-		vec3_normalize(&vertexNormal);
-
-		// Find the vector between point A and the camera
-		vec3_t cameraRay = vec3_sub(cameraPosition, vec3FromVec4(transformedVerts[0]));
-
-		// Find how aligned the camera is with the point the camera is facing
-		float dotNormalCamera = vec3_dot(vertexNormal, cameraRay);
-
-		// Skip over non-camera-facing faces
-		if (dotNormalCamera < 0 && settings.cull == cull_backface) {
-			continue;
-		}
-
-		vec2_t projectedPoints[3];
-
-		// Loop all 3 vertices to perform projection: 
 		for (int j = 0; j < 3; j++) {
-			projectedPoints[j] = vec3_project(vec3FromVec4(transformedVerts[j]), fovFactor);
-			projectedPoints[j].x += ( windowWidth  / 2 );
-			projectedPoints[j].y += ( windowHeight / 2 );
+			vec4_t transformed_point =  vec4FromVec3(faceVertices[j]); 
+			mat4_t world_matrix = mat4_identity();
+
+			world_matrix = mat4_mul_mat4(scale_matrix, world_matrix);
+			world_matrix = mat4_mul_mat4(rotation_matrix_z, world_matrix);
+			world_matrix = mat4_mul_mat4(rotation_matrix_y, world_matrix);
+			world_matrix = mat4_mul_mat4(rotation_matrix_x, world_matrix);
+			world_matrix = mat4_mul_mat4(translation_matrix, world_matrix);
+
+			transformed_point = mat4_mul_vec4(world_matrix, transformed_point);
+			transformedVerts[j] = transformed_point;
+		}
+		//for (int j = 0; j < 3; j++) 
+		//   transformedVerts[j] = mat4_mul_vec4(mesh_transform, vec4FromVec3(faceVertices[j]));
+
+		// Backface culling
+		if (settings.cull)
+		{
+			// Get the vector between AB and AC
+			vec3_t vecAB = vec3_sub(vec3FromVec4(transformedVerts[1]), vec3FromVec4(transformedVerts[0]));
+			vec3_t vecAC = vec3_sub(vec3FromVec4(transformedVerts[2]), vec3FromVec4(transformedVerts[0]));
+			vec3_normalize(&vecAB);
+			vec3_normalize(&vecAC);
+
+			// Get the normal of the current triangle, the perpendicular angle from the tri
+			vec3_t vertexNormal = vec3_cross(vecAB, vecAC);
+
+			// Normalize the face normal
+			vec3_normalize(&vertexNormal);
+
+			// Find the vector between point A and the camera
+			vec3_t cameraRay = vec3_sub(cameraPosition, vec3FromVec4(transformedVerts[0]));
+
+			// Find how aligned the camera is with the point the camera is facing
+			float dotNormalCamera = vec3_dot(vertexNormal, cameraRay);
+
+			// Skip over non-camera-facing faces
+			if (dotNormalCamera < 0) {
+				continue;
+			}
+		}
+		
+		vec4_t projectedPoints[3];
+
+		// Perform projection: 
+		for (int j = 0; j < 3; j++) {
+			// ERROR: this func causes X to always be 0
+			projectedPoints[j] = mat4_project(proj_matrix, transformedVerts[j]);
+
+			// Scale into the view
+			projectedPoints[j].x *= (windowWidth / 2.0);
+			projectedPoints[j].y *= (windowHeight / 2.0);
+
+			// Translate to the middle of the view
+			projectedPoints[j].x += ( windowWidth  / 2.0 );
+			projectedPoints[j].y += ( windowHeight / 2.0 );
 		}
 
 		tri_t projectedTri = {
