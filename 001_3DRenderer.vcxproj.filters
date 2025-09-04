@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.c">
+    <ClCompile Include="Ponder3D.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Display.c">
