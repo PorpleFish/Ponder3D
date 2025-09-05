@@ -71,6 +71,7 @@ void setup(void) {
 	sun_light.direction.x = 0 ;
 	sun_light.direction.y = 1.0f;
 	sun_light.direction.z = 1.0f;
+	sun_light.intensity = 0.6f;
 
 	vec3_normalize(&sun_light.direction);
 
@@ -87,19 +88,10 @@ void update(void) {
 	// Initialize Triangle Array
 	trisToRender = NULL;
 
-	mesh.rotation.x += 0.0;
 	mesh.rotation.y += 0.1;
-	mesh.rotation.z = M_PI;
 
-	mesh.translation.x = 0;
-	mesh.translation.y = 4.0;
+	mesh.translation.y = -4;
 	mesh.translation.z = 12.0;
-
-	mat4_t scale_matrix = mat4_scale_v(mesh.scale);
-	mat4_t translation_matrix = mat4_trans_v(mesh.translation);
-	mat4_t rotation_matrix_x = mat4_rotat_x(mesh.rotation.x);
-	mat4_t rotation_matrix_y = mat4_rotat_y(mesh.rotation.y);
-	mat4_t rotation_matrix_z = mat4_rotat_z(mesh.rotation.z);
 
 	mat4_t mesh_transform = mat4_translate(mesh.scale, mesh.translation, mesh.rotation);
 
@@ -150,9 +142,9 @@ void update(void) {
 			// ERROR: this func causes X to always be 0
 			projectedPoints[j] = mat4_project(proj_matrix, transformedVerts[j]);
 
-			// Scale into the view
+			// Scale into the view, and negate the Y
 			projectedPoints[j].x *= (windowWidth / 2.0);
-			projectedPoints[j].y *= (windowHeight / 2.0);
+			projectedPoints[j].y *= -(windowHeight / 2.0);
 
 			// Translate to the middle of the view
 			projectedPoints[j].x += ( windowWidth  / 2.0 );
@@ -160,6 +152,7 @@ void update(void) {
 		}
 
 		float face_brightness = light_getFaceAlignment(vertexNormal, sun_light);
+		face_brightness += 0.2;
 		color_t tri_color; 
 		tri_color.color = apply_light(meshFace.color, face_brightness);
 

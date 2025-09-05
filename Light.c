@@ -4,6 +4,7 @@
 float light_getFaceAlignment(vec3_t normal, light_t light)
 {
     float result = fabs(vec3_dot(normal, light.direction));
+    result *= light.intensity;
     return result;
 }
 
