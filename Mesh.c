@@ -131,6 +131,7 @@ bool loadObj(const char* fileName)
 			.b = vertIndices[1],
 			.c = vertIndices[2]
 			};
+			nextFace.color = RGBAToColor(255, 255, 255, 255);
 			array_push(mesh.faces, nextFace);
 		}
 

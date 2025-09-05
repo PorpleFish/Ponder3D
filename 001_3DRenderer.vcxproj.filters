@@ -39,6 +39,12 @@
     <ClCompile Include="Matrix.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Light.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Display.h">
@@ -67,5 +73,8 @@
     <None Include="Tri.h">
       <Filter>Header Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Post_Tutorial_Wishlist.txt" />
   </ItemGroup>
 </Project>

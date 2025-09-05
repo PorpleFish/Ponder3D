@@ -2,3 +2,13 @@ Things to do after the tutorial
 - Port to C++ 
 - Change from main() to SDL app function callbacks
 - Implement Imgui for parameterizing lighting
+- Default mesh creation utilizing an enum
+	> UV Sphere
+	> Quad Sphere
+	> Cube
+	> Plane
+	> Cylinder
+	> Circle
+- Gourad Shading
+- Gooch Shading
+- Phong Shading

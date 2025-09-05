@@ -13,6 +13,7 @@
 #include "Matrix.h"
 #include "Mesh.h"
 #include "Color.h"
+#include "Light.h"
 
 ///////////////////////////////////////////
 /// Array of Tris to render
@@ -32,6 +33,7 @@ mat4_t proj_matrix;
 bool isRunning = false;
 int previousFrameTime = 0;
 color_t currentColor;
+light_t sun_light;
 
 //DisplayState currentState = FlatWires;
 
@@ -61,10 +63,16 @@ void setup(void) {
 	float zfar = 100.0;
 	proj_matrix = mat4_persp(fov, aspect, znear, zfar);
 
-	// loadObj("Assets/cube.obj");
-	loadCubeMeshData();
+	loadObj("Assets/Hornet.obj");
+	// loadCubeMeshData();
 
 	currentColor = HSVAToColor(24, 83, 87, 255);
+
+	sun_light.direction.x = 0 ;
+	sun_light.direction.y = 1.0f;
+	sun_light.direction.z = 1.0f;
+
+	vec3_normalize(&sun_light.direction);
 
 	settings.showVerts		 = true;
 	settings.showWireframe   = true;
@@ -79,13 +87,13 @@ void update(void) {
 	// Initialize Triangle Array
 	trisToRender = NULL;
 
-	mesh.rotation.x += 0.1;
+	mesh.rotation.x += 0.0;
 	mesh.rotation.y += 0.1;
-	mesh.rotation.z += 0.1;
+	mesh.rotation.z = M_PI;
 
 	mesh.translation.x = 0;
-	mesh.translation.y = 0.0;
-	mesh.translation.z = 35.0;
+	mesh.translation.y = 4.0;
+	mesh.translation.z = 12.0;
 
 	mat4_t scale_matrix = mat4_scale_v(mesh.scale);
 	mat4_t translation_matrix = mat4_trans_v(mesh.translation);
@@ -99,6 +107,7 @@ void update(void) {
 	for (int i = 0; i < faceCount; i++) {
 		face_t meshFace = mesh.faces[i]; // Set temporary face
 
+
 		vec3_t faceVertices[3];
 		faceVertices[0] = mesh.verts[meshFace.a - 1];
 		faceVertices[1] = mesh.verts[meshFace.b - 1];
@@ -106,43 +115,28 @@ void update(void) {
 
 		vec4_t transformedVerts[3];
 
-		for (int j = 0; j < 3; j++) {
-			vec4_t transformed_point =  vec4FromVec3(faceVertices[j]); 
-			mat4_t world_matrix = mat4_identity();
+		for (int j = 0; j < 3; j++) 
+		   transformedVerts[j] = mat4_mul_vec4(mesh_transform, vec4FromVec3(faceVertices[j]));
 
-			world_matrix = mat4_mul_mat4(scale_matrix, world_matrix);
-			world_matrix = mat4_mul_mat4(rotation_matrix_z, world_matrix);
-			world_matrix = mat4_mul_mat4(rotation_matrix_y, world_matrix);
-			world_matrix = mat4_mul_mat4(rotation_matrix_x, world_matrix);
-			world_matrix = mat4_mul_mat4(translation_matrix, world_matrix);
+		// Get the vector between AB and AC ?? NOTE: I changed the l (0,0) and r (1,2) values here
+		vec3_t vecAB = vec3_sub(vec3FromVec4(transformedVerts[0]), vec3FromVec4(transformedVerts[1]));
+		vec3_t vecAC = vec3_sub(vec3FromVec4(transformedVerts[0]), vec3FromVec4(transformedVerts[2]));
+		vec3_normalize(&vecAB);
+		vec3_normalize(&vecAC);
 
-			transformed_point = mat4_mul_vec4(world_matrix, transformed_point);
-			transformedVerts[j] = transformed_point;
-		}
-		//for (int j = 0; j < 3; j++) 
-		//   transformedVerts[j] = mat4_mul_vec4(mesh_transform, vec4FromVec3(faceVertices[j]));
+		// Get the normal of the current triangle, the perpendicular angle from the tri
+		vec3_t vertexNormal = vec3_cross(vecAB, vecAC);
+		vec3_normalize(&vertexNormal);
+
+		// Find the vector between point A and the camera
+		vec3_t cameraRay = vec3_sub(cameraPosition, vec3FromVec4(transformedVerts[0]));
+
+		// Find how aligned the camera is with the point the camera is facing
+		float dotNormalCamera = vec3_dot(vertexNormal, cameraRay);
 
 		// Backface culling
 		if (settings.cull)
 		{
-			// Get the vector between AB and AC
-			vec3_t vecAB = vec3_sub(vec3FromVec4(transformedVerts[1]), vec3FromVec4(transformedVerts[0]));
-			vec3_t vecAC = vec3_sub(vec3FromVec4(transformedVerts[2]), vec3FromVec4(transformedVerts[0]));
-			vec3_normalize(&vecAB);
-			vec3_normalize(&vecAC);
-
-			// Get the normal of the current triangle, the perpendicular angle from the tri
-			vec3_t vertexNormal = vec3_cross(vecAB, vecAC);
-
-			// Normalize the face normal
-			vec3_normalize(&vertexNormal);
-
-			// Find the vector between point A and the camera
-			vec3_t cameraRay = vec3_sub(cameraPosition, vec3FromVec4(transformedVerts[0]));
-
-			// Find how aligned the camera is with the point the camera is facing
-			float dotNormalCamera = vec3_dot(vertexNormal, cameraRay);
-
 			// Skip over non-camera-facing faces
 			if (dotNormalCamera < 0) {
 				continue;
@@ -165,13 +159,17 @@ void update(void) {
 			projectedPoints[j].y += ( windowHeight / 2.0 );
 		}
 
+		float face_brightness = light_getFaceAlignment(vertexNormal, sun_light);
+		color_t tri_color; 
+		tri_color.color = apply_light(meshFace.color, face_brightness);
+
 		tri_t projectedTri = {
 			.points = {
 				{projectedPoints[0].x, projectedPoints[0].y},
 				{projectedPoints[1].x, projectedPoints[1].y},
 				{projectedPoints[2].x, projectedPoints[2].y}
 			},
-			.color = meshFace.color,
+			.color = tri_color,
 			.depth = (transformedVerts[0].z + transformedVerts[1].z + transformedVerts[2].z) / 3
 		};
 		array_push(trisToRender, projectedTri);

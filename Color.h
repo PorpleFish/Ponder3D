@@ -11,8 +11,13 @@ typedef struct {
 color_t RGBAToColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 color_t HSVAToColor(float h, float s, float l, unsigned char a);
 
-const char* RGBAcolorToString(color_t color);
+void RGBAcolorToString(color_t color);
 const char* HSVAcolorToString(color_t color);
+
+signed char get_r(color_t in);
+signed char get_g(color_t in);
+signed char get_b(color_t in);
+signed char get_a(color_t in);
 
 color_t blendNormal(color_t colorA, color_t colorB);
 

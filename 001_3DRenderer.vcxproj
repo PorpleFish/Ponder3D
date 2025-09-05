@@ -147,6 +147,8 @@
     <ClCompile Include="Array.c" />
     <ClCompile Include="Color.c" />
     <ClCompile Include="Display.c" />
+    <ClCompile Include="Light.c" />
+    <ClCompile Include="Light.h" />
     <ClCompile Include="Ponder3D.c" />
     <ClCompile Include="Matrix.c" />
     <ClCompile Include="Mesh.c" />
@@ -164,6 +166,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Tri.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Post_Tutorial_Wishlist.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

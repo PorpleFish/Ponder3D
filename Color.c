@@ -8,7 +8,6 @@ color_t RGBAToColor(unsigned char r, unsigned char g, unsigned char b, unsigned 
 	unsigned int green = (unsigned int)g << 8;
 	unsigned int blue = (unsigned int)b << 0;
 
-
 	color.color = color.color | red;
 	color.color = color.color | green;
 	color.color = color.color | blue;
@@ -91,4 +90,29 @@ color_t HSVAToColor(float h, float s, float l, unsigned char a) {
 	color_t returnColor = RGBAToColor((unsigned char)red, (unsigned char)gre, (unsigned char)blu, a);
 
 	return returnColor;
+}
+
+void RGBAcolorToString(color_t color)
+{
+	printf("[COLOR] R: %i G: %i B: %i A: %i \n", get_r(color), get_g(color), get_b(color), get_a(color));
+}
+
+unsigned char get_a(color_t in)
+{
+	return in.color & 0xFF000000;
+}
+
+unsigned char get_r(color_t in)
+{
+	return in.color & 0x00FF0000;
+}
+
+unsigned char get_g(color_t in)
+{
+	return in.color & 0x0000FF00;
+}
+
+unsigned char get_b(color_t in)
+{
+	return in.color & 0x000000FF;
 }
