@@ -2,12 +2,10 @@
 #define SETTINGS_H
 
 typedef enum faceRenderStyle_t {
-	triStyle_flat,
-	// TODO: triStyle_matcap,
-	// TODO: triStyle_phong, 
-	// TODO: triStyle_lambert,
-	// TODO: triStyle_shaded
+	FLAT,
+	FLAT_TEXTURED
 } faceRenderStyle_t;
+
 typedef enum cullMethod_t {
 	cull_non,
 	cull_backface
@@ -18,6 +16,7 @@ typedef struct{
 	bool showWireframe;
 	bool showTris;
 	cullMethod_t cull;
+	faceRenderStyle_t face_render_style;
 } settings_t;
 
 #endif

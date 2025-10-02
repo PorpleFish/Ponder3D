@@ -152,6 +152,7 @@
     <ClCompile Include="Ponder3D.c" />
     <ClCompile Include="Matrix.c" />
     <ClCompile Include="Mesh.c" />
+    <ClCompile Include="Texture.c" />
     <ClCompile Include="Tri.c" />
     <ClCompile Include="Vector.c" />
   </ItemGroup>
@@ -165,6 +166,7 @@
     <ClInclude Include="Vector.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Texture.h" />
     <None Include="Tri.h" />
   </ItemGroup>
   <ItemGroup>

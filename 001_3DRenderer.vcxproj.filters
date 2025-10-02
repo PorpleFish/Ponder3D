@@ -45,6 +45,9 @@
     <ClCompile Include="Light.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Texture.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Display.h">
@@ -71,6 +74,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Tri.h">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Texture.h">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

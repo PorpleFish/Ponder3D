@@ -14,6 +14,8 @@
 #include "Mesh.h"
 #include "Color.h"
 #include "Light.h"
+#include "Texture.h"
+#include "Tri.h"
 
 ///////////////////////////////////////////
 /// Array of Tris to render
@@ -54,17 +56,18 @@ void setup(void) {
 		windowHeight
 	);
 
-	printf("[SETUP] Win Width: %d \n", windowWidth);
-	printf("[SETUP] Win Height: %d \n", windowHeight);
-
 	float fov = M_PI / 3.0; // the same as 180/3, or 60deg
 	float aspect = (float)windowHeight / (float)windowWidth;
 	float znear = 0.1;
 	float zfar = 100.0;
 	proj_matrix = mat4_persp(fov, aspect, znear, zfar);
 
-	loadObj("Assets/Hornet.obj");
-	// loadCubeMeshData();
+	// Set texture:
+	current_texture = (int32_t*)DEBUG_TEXTURE;
+	// TODO: Convert to .png
+
+	// loadObj("Assets/Hornet.obj");
+	loadCubeMeshData();
 
 	currentColor = HSVAToColor(24, 83, 87, 255);
 
@@ -75,10 +78,11 @@ void setup(void) {
 
 	vec3_normalize(&sun_light.direction);
 
-	settings.showVerts		 = true;
-	settings.showWireframe   = true;
-	settings.showTris	     = true;
-	settings.cull		     = cull_backface;
+	settings.showVerts		   = true;
+	settings.showWireframe     = true;
+	settings.showTris	       = true;
+	settings.cull		       = cull_backface;
+	settings.face_render_style = FLAT_TEXTURED;
 }
 
 void update(void) {
@@ -98,7 +102,6 @@ void update(void) {
 	int faceCount = array_length(mesh.faces);
 	for (int i = 0; i < faceCount; i++) {
 		face_t meshFace = mesh.faces[i]; // Set temporary face
-
 
 		vec3_t faceVertices[3];
 		faceVertices[0] = mesh.verts[meshFace.a - 1];
@@ -162,6 +165,11 @@ void update(void) {
 				{projectedPoints[1].x, projectedPoints[1].y},
 				{projectedPoints[2].x, projectedPoints[2].y}
 			},
+			.texcoords = {
+				{meshFace.a_uv.u, meshFace.a_uv.v},
+				{meshFace.b_uv.u, meshFace.b_uv.v},
+				{meshFace.c_uv.u, meshFace.c_uv.v}
+			},
 			.color = tri_color,
 			.depth = (transformedVerts[0].z + transformedVerts[1].z + transformedVerts[2].z) / 3
 		};
@@ -191,11 +199,25 @@ void render(void) {
 		tri_t triangle = trisToRender[i];
 
 		if (settings.showTris) { 
-			drawTri_flat(
-				triangle.points[0].x, triangle.points[0].y,
-				triangle.points[1].x, triangle.points[1].y,
-				triangle.points[2].x, triangle.points[2].y,
-				triangle.color.color);
+			switch (settings.face_render_style) {
+			case FLAT:
+				drawTri_flat(
+					triangle.points[0].x, triangle.points[0].y,
+					triangle.points[1].x, triangle.points[1].y,
+					triangle.points[2].x, triangle.points[2].y,
+					triangle.color.color);
+				break;
+			case FLAT_TEXTURED:
+				printf("[MAIN] No function exists for drawing textured tri\n");
+				drawTri_textured(
+					triangle.points[0].x, triangle.points[0].y, triangle.texcoords[0].u, triangle.texcoords[0].v,
+					triangle.points[1].x, triangle.points[1].y, triangle.texcoords[1].u, triangle.texcoords[1].v,
+					triangle.points[2].x, triangle.points[2].y, triangle.texcoords[2].u, triangle.texcoords[2].v,
+					triangle.color.color);
+				break;
+			default:
+				break;
+			}
 		}
 
 		if (settings.showWireframe) {
@@ -244,6 +266,11 @@ void processInput(void) {
 		break;
 	case SDLK_4:
 		settings.cull = (settings.cull + 1) % 2;
+		break;
+	case SDLK_5:
+		if (settings.face_render_style == FLAT) 
+			settings.face_render_style = FLAT_TEXTURED;
+		else settings.face_render_style = FLAT;
 		break;
 	default:
 		break;

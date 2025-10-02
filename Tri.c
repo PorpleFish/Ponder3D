@@ -40,12 +40,6 @@ void drawTri_flatTop(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t co
 
 void drawTri_flat(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color)
 {
-	// DONE: Sort by Y
-	// DONE: Find My
-	// DONE: Find MX
-	// DONE: Draw flat bottom
-	// TODO: Draw flat top
-	
 	if (y0 > y1) {
 		int_swap(&y0, &y1);
 		int_swap(&x0, &x1);
@@ -69,5 +63,14 @@ void drawTri_flat(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color
 		drawTri_flatBottom(x0, y0, x1, y1, Mx, y1, color);
 		drawTri_flatTop(x1, y1, Mx, y1, x2, y2, color);
 	}
+}
+
+void drawTri_textured(
+	int x0, int y0, float u0, float v0,
+	int x1, int y1, float u1, float v1,
+	int x2, int y2, float u2, float v2,
+	uint32_t* texture
+) {
+	// TODO: Loop through all pixels and render based on texel colour
 
 }
